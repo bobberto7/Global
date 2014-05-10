@@ -1,0 +1,49 @@
+#Created by bobberto7
+options:
+	#The time between broadcasts in minute, default is three minutes
+	interval: 3
+	#The prefix this will be shown before he broadcast,
+	#Example: [Broadcaster] This is a message :D
+	prefix: "&8&l[&9Broadcaster&8&l]&3"
+	#Permissions to use /broadcaster there will be more permissions
+	perm: broadcaster.*
+
+command /broadcaster <text=help> [<text>]:
+	permission: {@perm}
+	description: "main command for broadcaster"
+	aliases: br, broadcast
+	trigger:
+		set {_prefix} to {@prefix}
+		if argument 1 is "Help":
+			message "&8---- &9Broadcaster&8 ----"
+			message "&3/broadcaster help"
+			message "&3/broadcaster list"
+			message "&3/broadcaster add"
+			message "&3/broadcaster remove"
+			message "&3/broadcaster reload"
+			message "&3/broadcaster toggle"
+		if argument 1 is "toggle":
+			if {broadcaster.%player%.toggled} is set:
+				delete {broadcaster.%player%.toggled}
+				message "&3Broadcaster turned on"
+			else:
+				set {broadcaster.%player%.toggled} to 1
+		if argument 1 is "List":
+			message "&8---- &9List&8 ----"
+			loop {broadcaster.messages::*}:
+				message loop-value
+		if argument 1 is "add":
+			add colored argument 2 to {broadcaster.messages::*}
+			message "%{_prefix}% %argument 2% has been added."
+		if argument 1 is "Remove":
+			delete {broadcaster.messages::%argument 2%}
+			send "%{_prefix}% %argument 2% has been deleted."
+		if argument 1 is "reload":
+			execute player command "/sk reload broadcaster"
+every {@interval} minutes:
+	set {_message} to a random element out of {broadcaster.messages::*}
+	if {_message} isn't "<none>":
+		loop all players:
+			if {broadcaster.%loop-player%.toggled} is not set:
+				set {_prefix} to {@prefix}
+				message "%{_prefix}% %{_message}%" to loop-player
